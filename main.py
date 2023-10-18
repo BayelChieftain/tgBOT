@@ -15,6 +15,29 @@ startText = (
     "\nСпасибо за использование Тулпар Бот Проезда! Приятной поездки!"
 )
 
+def CheckBalance(userName, msg):
+    import sqlite3
+
+    # Подключение к базе данных
+    conn = sqlite3.connect('users.sql')
+    cursor = conn.cursor()
+
+    # Имя пользователя, для которого нужно получить баланс
+    username_to_lookup = userName
+
+    # Выполнение запроса
+    cursor.execute("SELECT balance FROM users WHERE username = ?", (username_to_lookup,))
+    balance = cursor.fetchone()
+
+    # Если username найден, то balance будет содержать баланс
+    if balance is not None:
+        balance = balance[0]
+        bot.send_message(msg.chat.id, f"Баланс пользователя {username_to_lookup}:  {balance}")
+    else:
+        bot.send_message(msg.chat.id, f"Пользователь {username_to_lookup} не найден.")
+
+    conn.close()
+
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -24,7 +47,7 @@ def start(message):
     cur.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
+            username TEXT UNIQUE,
             name VARCHAR(49) NOT NULL,
             balance REAL DEFAULT 0,
             points INTEGER DEFAULT 0,
@@ -43,10 +66,10 @@ def start(message):
 def surname(message):
     name = message.text.strip()
     UserName = '@' + message.from_user.username
+
     conn = sqlite3.connect('users.sql')
     cur = conn.cursor()
-
-    cur.execute('INSERT INTO users (username, name) VALUES (?, ?)', (UserName, name))
+    cur.execute('INSERT OR IGNORE INTO users (username, name) VALUES (?, ?)', (UserName, name))
     conn.commit()
     cur.close()
     conn.close()
@@ -54,6 +77,11 @@ def surname(message):
     bot.send_message(message.chat.id, 'Пользователь зарегистрирован!')
 
 
+@bot.message_handler(commands=['balance'])
+def balance(msg):
+    userName = '@' + msg.from_user.username
+
+    bot.send_message(msg.chat.id, CheckBalance(userName, msg))
 @bot.message_handler(commands=['help'])
 def main(message):
     bot.send_message(message.chat.id, 'help info')
@@ -64,7 +92,7 @@ def main(message):
 
     info = ''
     for el in uss:
-        info += f'Имя: {el[3]} '
+        info += f'Имя: {el[2]} '
 
     cur.close()
     conn.close()
