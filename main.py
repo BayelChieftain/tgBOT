@@ -18,7 +18,6 @@ startText = (
 def CheckBalance(userName, msg):
     import sqlite3
 
-    # Подключение к базе данных
     conn = sqlite3.connect('users.sql')
     cursor = conn.cursor()
 
@@ -36,6 +35,21 @@ def CheckBalance(userName, msg):
 
     conn.close()
 
+def CheckProfile(userName, msg):
+    conn = sqlite3.connect('users.sql')
+    cursor = conn.cursor()
+
+    username_to_lookup = userName
+    cursor.execute('SELECT name, trips FROM users WHERE username = ?', (username_to_lookup,))
+    result = cursor.fetchone()
+
+    if result:
+        name, trips = result
+        bot.send_message(msg.chat.id, f"Имя пользователя: {name}\nКоличество поездок пользователя: {trips}")
+    else:
+        print(f"Пользователь {username_to_lookup} не найден.")
+
+    conn.close()
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -78,22 +92,15 @@ def surname(message):
 @bot.message_handler(commands=['balance'])
 def balance(msg):
     userName = '@' + msg.from_user.username
-
     bot.send_message(msg.chat.id, CheckBalance(userName, msg))
+
+@bot.message_handler(commands=['profile'])
+def profile(msg):
+    userName = '@' + msg.from_user.username
+    bot.send_message(msg.chat.id, CheckProfile(userName, msg))
+
 @bot.message_handler(commands=['help'])
 def main(message):
-    bot.send_message(message.chat.id, 'help info')
-    conn = sqlite3.connect('users.sql')
-    cur = conn.cursor()
-    cur.execute('SELECT * FROM users')
-    uss = cur.fetchall()
-
-    info = ''
-    for el in uss:
-        info += f'Имя: {el[2]} '
-
-    cur.close()
-    conn.close()
 
     bot.send_message(message.chat.id, info)
 
