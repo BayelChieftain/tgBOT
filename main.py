@@ -26,13 +26,11 @@ def CheckBalance(userName, msg):
     username_to_lookup = userName
 
     # Выполнение запроса
-    cursor.execute("SELECT balance FROM users WHERE username = ?", (username_to_lookup,))
-    balance = cursor.fetchone()
-
-    # Если username найден, то balance будет содержать баланс
-    if balance is not None:
-        balance = balance[0]
-        bot.send_message(msg.chat.id, f"Баланс пользователя {username_to_lookup}:  {balance}")
+    cursor.execute("SELECT balance, points FROM users WHERE username = ?", (username_to_lookup,))
+    result = cursor.fetchone()
+    if result:
+        balance, points = result
+        bot.send_message(msg.chat.id, f"Ваш баланс:  {balance}\nКоличество баллов:  {points}")
     else:
         bot.send_message(msg.chat.id, f"Пользователь {username_to_lookup} не найден.")
 
