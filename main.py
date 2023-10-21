@@ -14,6 +14,13 @@ startText = (
     " /help - Получить список доступных команд.\n"
     "\nСпасибо за использование Тулпар Бот Проезда! Приятной поездки!"
 )
+helpText = (
+    "/balance - Проверить текущий баланс и количество баллов.\n"
+    "/profile - Посмотреть свой профиль.\n" 
+    "/help - Получить список доступных команд.\n"
+    "/pay - Пополнить баланс\n"
+    "/ticket - Оплата проезда\n"
+)
 
 def CheckBalance(userName, msg):
     import sqlite3
@@ -88,7 +95,6 @@ def surname(message):
 
     bot.send_message(message.chat.id, 'Пользователь зарегистрирован!')
 
-
 @bot.message_handler(commands=['balance'])
 def balance(msg):
     userName = '@' + msg.from_user.username
@@ -102,7 +108,7 @@ def profile(msg):
 @bot.message_handler(commands=['help'])
 def main(message):
 
-    bot.send_message(message.chat.id, info)
+    bot.send_message(message.chat.id, helpText)
 
 # open site
 @bot.message_handler(commands=['website'])
@@ -115,5 +121,10 @@ def info(message):
     fName = message.from_user.first_name
     UserName = '@' + message.from_user.username
     bot.send_message(message.chat.id, UserName)
-
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton('11 сом', callback_data='11'))
+    markup.add(types.InlineKeyboardButton('33 сом', callback_data='33'))
+    markup.add(types.InlineKeyboardButton('66 сом', callback_data='66'))
+    markup.add(types.InlineKeyboardButton('88 сом', callback_data='88'))
+    bot.send_message(message.chat.id, 'Пополнить баланс на сумму:', reply_markup=markup)
 bot.polling(none_stop=True)
